@@ -14,11 +14,10 @@ parameters:
   Language: ''
   DocRepoDestinationPath: '' #usually docs-ref-services/
   CIConfigs: '[]'
-  GHReviewersVariable: '' 
+  GHReviewersVariable: ''
   GHTeamReviewersVariable: '' # externally set, as eng-common does not have the identity-resolver. Run as pre-step
   OnboardingBranch: ''
   CloseAfterOpenForTesting: false
-  SkipPackageJson: false
 
 steps:
 - pwsh: |
@@ -30,14 +29,23 @@ steps:
       Write-Host "This script is not executing on Windows, skipping registry modification."
     }
   displayName: Enable Long Paths if Necessary
-  
-- pwsh: |
-    git clone https://github.com/${{ parameters.TargetDocRepoOwner }}/${{ parameters.TargetDocRepoName }} ${{ parameters.WorkingDirectory }}/repo
-  displayName: Clone Documentation Repository
-  ignoreLASTEXITCODE: false
+
+- template: /eng/common/pipelines/templates/steps/sparse-checkout.yml
+  parameters:
+    SkipDefaultCheckout: true
+    Repositories:
+      - Name: ${{ parameters.TargetDocRepoOwner }}/${{ parameters.TargetDocRepoName }}
+        Commitish: master
+        WorkingDirectory: ${{ parameters.WorkingDirectory }}/repo
+    Paths:
+      - docs-ref-services  # java, python, js
+      - ci-configs  # python, js
+      - api  # net
+      - bundlepackages  # net
+
 - template: /eng/common/pipelines/templates/steps/set-default-branch.yml
   parameters:
-    WorkingDirectory: ${{ parameters.WorkingDirectory }}/repo 
+    WorkingDirectory: ${{ parameters.WorkingDirectory }}/repo
 - task: PowerShell@2
   displayName: 'Apply Documentation Updates From Artifact'
   inputs:
