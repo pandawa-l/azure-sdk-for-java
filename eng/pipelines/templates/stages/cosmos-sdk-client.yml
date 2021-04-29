@@ -61,7 +61,9 @@ stages:
             Selection: all
             GenerateVMJobs: true
         CloudConfig:
-          SubscriptionConfiguration: $(sub-config-azure-cloud-test-resources)
+          SubscriptionConfigurations:
+            - $(sub-config-azure-cloud-test-resources)
+            - $(sub-config-cosmos-azure-cloud-test-resources)
           Cloud: Public
         AdditionalParameters:
           DisableAzureResourceCreation: true
